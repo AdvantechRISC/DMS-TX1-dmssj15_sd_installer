@@ -129,6 +129,8 @@ void ProgressSlideshowDialog::setMaximum(qint64 bytes)
 
 void ProgressSlideshowDialog::updateIOstats()
 {
+    ui->mbwrittenLabel->setText(tr("Please wait for written image to device..."));
+#if 0
     int sectors = sectorsWritten()-_sectorsStart;
     double sectorsPerSec = sectors * 1000.0 / _t1.elapsed();
     if (_maxSectors)
@@ -143,6 +145,7 @@ void ProgressSlideshowDialog::updateIOstats()
         ui->mbwrittenLabel->setText(tr("%1 MB written (%2 MB/sec)")
                                     .arg(QString::number(sectors/2048), QString::number(sectorsPerSec/2048.0, 'f', 1)));
     }
+#endif
 }
 
 int ProgressSlideshowDialog::sectorsWritten()
