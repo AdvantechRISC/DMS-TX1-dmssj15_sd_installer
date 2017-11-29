@@ -43,6 +43,12 @@ void reboot_to_extended()
     ::reboot(RB_AUTOBOOT);
 }
 
+void shutdown()
+{
+    // Shutdown
+    ::reboot(LINUX_REBOOT_CMD_POWER_OFF);
+}
+
 int main(int argc, char *argv[])
 {
     // Wait for keyboard to appear before displaying anything
@@ -163,6 +169,6 @@ int main(int argc, char *argv[])
 #endif
 
     a.exec();
-    reboot_to_extended();
+    shutdown();
     return 0;
 }

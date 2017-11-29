@@ -30,6 +30,7 @@ protected:
     /* key: folder, value: flavour */
     QMultiMap<QString,QString> _images;
     const QString _root;
+    bool check_flash_target();
     
 signals:
     void error(const QString &msg);

@@ -12,6 +12,8 @@ TARGET = recovery
 TEMPLATE = app
 lessThan(QT_MAJOR_VERSION, 5): LIBS += -lqjson
 
+LIBS += -lusb
+
 system(sh updateqm.sh 2>/dev/null)
 
 GIT_VERSION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe --always --tags)

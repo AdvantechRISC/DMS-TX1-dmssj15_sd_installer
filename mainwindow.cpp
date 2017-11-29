@@ -375,7 +375,7 @@ void MainWindow::onCompleted()
       QMessageBox::information(this,
                                tr("OS installed"),
                                tr("Flashing has completed, and OS is installed successfully.\n") +
-                               tr("Please remove SD Card, when you are ready, press OK to reboot"),
+                               tr("Please remove SD Card, when you are ready, press OK to shutdown."),
                                QMessageBox::Ok);
 
     _qpd->deleteLater();

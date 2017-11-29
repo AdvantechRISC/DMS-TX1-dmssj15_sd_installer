@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <linux/fs.h>
 #include <sys/ioctl.h>
+#include <usb.h>
 
 MultiImageWriteThread::MultiImageWriteThread(const QString &folder, QObject *parent) :
   QThread(parent), _root(folder)
@@ -21,6 +22,24 @@ MultiImageWriteThread::MultiImageWriteThread(const QString &folder, QObject *par
 
     // if (!dir.exists("/mnt2"))
     //     dir.mkdir("/mnt2");
+}
+
+bool MultiImageWriteThread::check_flash_target()
+{
+    struct usb_bus *bus;
+    struct usb_device *dev;
+    usb_init();
+    usb_find_busses();
+    usb_find_devices();
+    for (bus = usb_busses; bus; bus = bus->next) {
+        for (dev = bus->devices; dev; dev = dev->next){
+
+            if ((dev->descriptor.idVendor == 0x0955) && (dev->descriptor.idProduct == 0x7721))
+                return true;
+        }
+    }
+
+    return false;
 }
 
 void MultiImageWriteThread::addImage(const QString &folder, const QString &flavour)
@@ -54,6 +73,30 @@ bool MultiImageWriteThread::processImage(const QString &folder, const QString &f
 
     emit statusUpdate(tr("%1: About to flash").arg(os_name));
 
+    QProcess entryTX1Recovery;
+    entryTX1Recovery.setWorkingDirectory(folder);
+    entryTX1Recovery.start(_root + "/entry_recovery");
+
+    entryTX1Recovery.waitForFinished(-1);
+
+    if (entryTX1Recovery.exitCode() != 0)
+    {
+        qDebug() << entryTX1Recovery.errorString();
+        qDebug() << entryTX1Recovery.readAllStandardError();
+        qDebug() << "exit code" << entryTX1Recovery.exitCode();
+        qDebug() << "exit status" << entryTX1Recovery.exitStatus();
+        emit error(tr("%1: Error when TX1 entry recovery mode").arg(os_name));
+        return false;
+    }
+
+    usleep(5 * 1000 * 1000);
+
+    if (!check_flash_target()) {
+        qDebug() << "Can't to find the flash target!";
+        emit error(tr("%1: Error when find the flash target!").arg(os_name));
+        return false;
+    }
+
     QProcess burn;
     burn.setWorkingDirectory(folder);
     qDebug() << "Working folder: " << folder;
@@ -65,14 +108,14 @@ bool MultiImageWriteThread::processImage(const QString &folder, const QString &f
     burn.waitForFinished(-1);
 
     if (burn.exitCode() != 0)
-      {
+    {
         qDebug() << burn.errorString();
         qDebug() << burn.readAllStandardError();
         qDebug() << "exit code" << burn.exitCode();
         qDebug() << "exit status" << burn.exitStatus();
         emit error(tr("%1: Error when flashing file system").arg(os_name));
         return false;
-      }
+    }
 
     qDebug() << burn.readAllStandardOutput();
     qDebug() << burn.readAllStandardError();
